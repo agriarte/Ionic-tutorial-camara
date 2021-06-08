@@ -75,6 +75,25 @@ export class PhotoService {
     }
   }
 
+  public async deletePicture(photo: IPhoto, position: number) {
+    // Remove this photo from the Photos reference data array
+    this.photos.splice(position, 1); //position = indice, 1 = numero de elementos a borrar
+
+    // Update photos array cache by overwriting the existing photo array
+    Storage.set({
+      key: this.PHOTO_STORAGE,
+      value: JSON.stringify(this.photos)
+    });
+
+    // delete photo file from filesystem
+    const filename = photo.filepath.substr(photo.filepath.lastIndexOf('/') + 1);
+
+    await Filesystem.deleteFile({
+      path: filename,
+      directory: Directory.Data
+    });
+  }
+
   private async savePicture(cameraPhoto: Photo) {
     // Convert photo to base64 format, required by Filesystem API to save
     const base64Data = await this.readAsBase64(cameraPhoto);
